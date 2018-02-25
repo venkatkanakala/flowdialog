@@ -92,9 +92,8 @@ server.post('/get-movie-details_1', function (req, res) {
             displayText: 'Something went wrong!',
             source: 'get-movie-details'
         });
-    }
-    )
-});;;;;
+    })
+});
 //http://www.omdbapi.com/?i=tt3896198&apikey=375198c0&t=%22rambo%22
 server.post('/get-movie-details', (request, response) => {
     let movieToSearch = request.body.result && request.body.result.parameters && request.body.result.parameters.movie ? request.body.result.parameters.movie : 'IronMan';
