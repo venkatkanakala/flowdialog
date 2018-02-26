@@ -5,6 +5,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const http = require('http');
 const https = require("https");
+const logger = require('heroku-logger')
 const server = express();
 const apiKey = "5674944c3315b2c4424e484b95704aed";
 //https://api.themoviedb.org/3/movie/550?api_key=5674944c3315b2c4424e484b95704aed
@@ -21,7 +22,9 @@ server.use(bodyParser.json());
 server.get('/', function (req, res) {
     res.send('hello world')
 });
+
 server.get('/getMovieDB', function (req, res) {
+
     var options = {
         "method": "GET",
         "hostname": "api.themoviedb.org",
@@ -64,6 +67,8 @@ server.get('/getMovieDB', function (req, res) {
 server.get('/users/:userId/books/:bookId', function (req, res) {
     res.send(req.params)
 });
+
+
 server.post('/get-movie-details_1', function (req, res) {
     let reqUrl = encodeURI('https://reqres.in/api/user');
     https.get(reqUrl, (responseFromAPI) => {
@@ -94,42 +99,48 @@ server.post('/get-movie-details_1', function (req, res) {
         });
     })
 });
+
+
 //http://www.omdbapi.com/?i=tt3896198&apikey=375198c0&t=%22rambo%22
 server.post('/get-movie-details', (request, response) => {
+
     let movieToSearch = request.body.result && request.body.result.parameters && request.body.result.parameters.movie ? request.body.result.parameters.movie : 'IronMan';
     let request_Url = encodeURI('http://www.omdbapi.com/?i=tt3896198&apikey=375198c0&t=' + movieToSearch);
+
+    logger.info('Request Params : ' + movieToSearch);
 
     //Make Service Call
     http.get(request_Url, (responseFromAPI) => {
 
-        responseFromAPI.on("data", responeData => {
+            responseFromAPI.on("data", responeData => {
+                logger.info('Response Data : ' + responeData);
 
-            let body = JSON.parse(responeData);
+                let body = JSON.parse(responeData);
 
-            //Send Respond back to service
-            return response.json({
-                speech: body,
-                displayText: body,
-                source: 'get-movie-details'
+                //Send Respond back to service
+                return response.json({
+                    speech: body,
+                    displayText: body,
+                    source: 'get-movie-details'
+                });
+
             });
 
-})
-responseFromAPI.on("end", () => {
+            responseFromAPI.on("end", () => {
+                logger.info('End of Response');
+            })
+        },
+        (error) => {
+            logger.error('Error : ', {error: error, module: 'Index.js'});
+            return response.json({
+                speech: 'Something went wrong!',
+                displayText: 'Something went wrong!',
+                source: 'get-movie-details'
+            });
+        })
+});
 
-            console.log("End Response");
-})
-
-}, (error) => {
-        console.log(error);
-        return response.json({
-            speech: 'Something went wrong!',
-            displayText: 'Something went wrong!',
-            source: 'get-movie-details'
-        });
-}
-)
-})
 server.listen((process.env.PORT || 8000), function () {
-    console.log("Server is up and running...");
+    logger.info('Starting server', { port: 8000 });
 });
 
