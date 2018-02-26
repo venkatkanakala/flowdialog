@@ -115,12 +115,14 @@ server.post('/get-movie-details', (request, response) => {
             responseFromAPI.on("data", responeData => {
                 logger.info('Response Data : ' + responeData);
 
-                let body = JSON.parse(responeData);
+                let movie = JSON.parse(responeData);
+                let dataToSend = movieToSearch === 'The Godfather' ? 'I don\'t have the required info on that. Here\'s some info on \'The Godfather\' instead.\n' : '';
+                dataToSend += movie.Title + ' is a ' + movie.Actors + ' starer ' + movie.Genre + ' movie, released in ' + movie.Year + '. It was directed by ' + movie.Director;
 
                 //Send Respond back to service
                 return response.json({
-                    speech: body,
-                    displayText: body,
+                    speech: dataToSend,
+                    displayText: dataToSend,
                     source: 'get-movie-details'
                 });
 
